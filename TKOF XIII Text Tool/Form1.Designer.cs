@@ -36,10 +36,14 @@
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.xORDecryptorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.xOREncryptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kOFMediaXbox360ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.unpackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.repackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -68,7 +72,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aboutToolStripMenuItem,
-            this.toolsToolStripMenuItem});
+            this.toolsToolStripMenuItem,
+            this.kOFMediaXbox360ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(541, 24);
@@ -94,16 +99,32 @@
             // xORDecryptorToolStripMenuItem
             // 
             this.xORDecryptorToolStripMenuItem.Name = "xORDecryptorToolStripMenuItem";
-            this.xORDecryptorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.xORDecryptorToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.xORDecryptorToolStripMenuItem.Text = "XOR Decrypt";
             this.xORDecryptorToolStripMenuItem.Click += new System.EventHandler(this.xORDecryptorToolStripMenuItem_Click);
             // 
             // xOREncryptToolStripMenuItem
             // 
             this.xOREncryptToolStripMenuItem.Name = "xOREncryptToolStripMenuItem";
-            this.xOREncryptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.xOREncryptToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.xOREncryptToolStripMenuItem.Text = "XOR Encrypt";
             this.xOREncryptToolStripMenuItem.Click += new System.EventHandler(this.xOREncryptToolStripMenuItem_Click);
+            // 
+            // kOFMediaXbox360ToolStripMenuItem
+            // 
+            this.kOFMediaXbox360ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.unpackToolStripMenuItem,
+            this.repackToolStripMenuItem});
+            this.kOFMediaXbox360ToolStripMenuItem.Name = "kOFMediaXbox360ToolStripMenuItem";
+            this.kOFMediaXbox360ToolStripMenuItem.Size = new System.Drawing.Size(135, 20);
+            this.kOFMediaXbox360ToolStripMenuItem.Text = "KOF Media (Xbox 360)";
+            // 
+            // unpackToolStripMenuItem
+            // 
+            this.unpackToolStripMenuItem.Name = "unpackToolStripMenuItem";
+            this.unpackToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.unpackToolStripMenuItem.Text = "Unpack";
+            this.unpackToolStripMenuItem.Click += new System.EventHandler(this.unpackToolStripMenuItem_Click);
             // 
             // pictureBox1
             // 
@@ -152,11 +173,28 @@
             this.radioButton3.UseVisualStyleBackColor = true;
             this.radioButton3.CheckedChanged += new System.EventHandler(this.radioButton3_CheckedChanged);
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(65, 73);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(100, 23);
+            this.progressBar1.TabIndex = 9;
+            this.progressBar1.Visible = false;
+            this.progressBar1.Click += new System.EventHandler(this.progressBar1_Click);
+            // 
+            // repackToolStripMenuItem
+            // 
+            this.repackToolStripMenuItem.Name = "repackToolStripMenuItem";
+            this.repackToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.repackToolStripMenuItem.Text = "Repack";
+            this.repackToolStripMenuItem.Click += new System.EventHandler(this.repackToolStripMenuItem_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(541, 235);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.radioButton3);
             this.Controls.Add(this.radioButton2);
             this.Controls.Add(this.radioButton1);
@@ -192,6 +230,10 @@
         private System.Windows.Forms.ToolStripMenuItem xORDecryptorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem xOREncryptToolStripMenuItem;
         private System.Windows.Forms.RadioButton radioButton3;
+        private System.Windows.Forms.ToolStripMenuItem kOFMediaXbox360ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem unpackToolStripMenuItem;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ToolStripMenuItem repackToolStripMenuItem;
     }
 }
 

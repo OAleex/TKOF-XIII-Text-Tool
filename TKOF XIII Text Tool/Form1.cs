@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace TKOF_XIII_Text_Tool
@@ -392,6 +393,183 @@ namespace TKOF_XIII_Text_Tool
         {
             for (int i = 0; i < count; i++)
                 buffer[i] ^= XORKey;
+        }
+
+        private void progressBar1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void unpackToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Title = "Select media.kof file";
+                openFileDialog.Filter = "KOF Media File|*.kof";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = openFileDialog.FileName;
+                    string baseDirectory = Path.GetDirectoryName(filePath);
+                    string extractionFolder = Path.Combine(baseDirectory, Path.GetFileNameWithoutExtension(filePath));
+
+                    try
+                    {
+                        progressBar1.Style = ProgressBarStyle.Marquee;
+                        progressBar1.Visible = true;
+
+                        await Task.Run(() =>
+                        {
+                            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                            using (BinaryReader reader = new BinaryReader(fs))
+                            {
+                                long fileSize = fs.Length;
+                                long currentOffset = 0;
+                                int blockSize = 0x100;
+
+                                while (currentOffset + blockSize <= fileSize)
+                                {
+                                    reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
+                                    byte[] block = reader.ReadBytes(blockSize);
+
+                                    string fileName = "";
+                                    for (int i = 0; i < 0xF4; i++)
+                                    {
+                                        if (block[i] == 0x00) break;
+                                        fileName += (char)block[i];
+                                    }
+
+                                    if (string.IsNullOrWhiteSpace(fileName))
+                                    {
+                                        break;
+                                    }
+
+                                    int fileStartPointer = (block[0xF4] << 24) | (block[0xF5] << 16) | (block[0xF6] << 8) | block[0xF7];
+
+                                    int fileSizeToExtract = (block[0xFC] << 24) | (block[0xFD] << 16) | (block[0xFE] << 8) | block[0xFF];
+
+                                    fs.Seek(fileStartPointer, SeekOrigin.Begin);
+                                    byte[] fileData = new byte[fileSizeToExtract];
+                                    reader.Read(fileData, 0, fileSizeToExtract);
+
+                                    string outputPath = Path.Combine(extractionFolder, Path.GetDirectoryName(fileName));
+                                    Directory.CreateDirectory(outputPath);
+                                    string outputFile = Path.Combine(outputPath, Path.GetFileName(fileName));
+                                    File.WriteAllBytes(outputFile, fileData);
+
+                                    Console.WriteLine($"File '{fileName}' extracted to '{outputPath}'.");
+
+                                    currentOffset += blockSize;
+                                }
+                            }
+                        });
+
+                        MessageBox.Show($"Extraction completed!", "Success!");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"An error occurred: {ex.Message}.", "Error!");
+                    }
+                    finally
+                    {
+                        progressBar1.Visible = false;
+                        progressBar1.Style = ProgressBarStyle.Blocks;
+                    }
+                }
+            }
+        }
+
+        private void repackToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "KOF Media File|*.kof";
+                openFileDialog.Title = "Select the media.kof file for repacking";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string selectedFile = openFileDialog.FileName;
+                    string baseDirectory = Path.GetDirectoryName(selectedFile);
+                    string folderToRepack = Path.Combine(baseDirectory, Path.GetFileNameWithoutExtension(selectedFile));
+                    string outputFile = Path.Combine(baseDirectory, Path.GetFileName(selectedFile) + ".new");
+
+                    if (!Directory.Exists(folderToRepack))
+                    {
+                        MessageBox.Show($"The folder '{folderToRepack}' does not exist. Make sure the extracted files are in the correct folder.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    progressBar1.Visible = true;
+                    progressBar1.Style = ProgressBarStyle.Marquee;
+
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            using (FileStream fs = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
+                            using (BinaryWriter writer = new BinaryWriter(fs))
+                            {
+                                var files = Directory.GetFiles(folderToRepack, "*.*", SearchOption.AllDirectories);
+
+                                long currentOffset = 0x100 * files.Length + 0x200;
+
+                                foreach (var file in files)
+                                {
+                                    byte[] fileData = File.ReadAllBytes(file);
+                                    string relativePath = GetRelativePath(folderToRepack, file);
+
+                                    byte[] block = new byte[0x100];
+                                    for (int i = 0; i < block.Length; i++) block[i] = 0x00;
+
+                                    byte[] pathBytes = Encoding.ASCII.GetBytes(relativePath);
+                                    Array.Copy(pathBytes, block, Math.Min(pathBytes.Length, 0xF4));
+
+                                    block[0xF4] = (byte)((currentOffset >> 24) & 0xFF);
+                                    block[0xF5] = (byte)((currentOffset >> 16) & 0xFF);
+                                    block[0xF6] = (byte)((currentOffset >> 8) & 0xFF);
+                                    block[0xF7] = (byte)(currentOffset & 0xFF);
+
+                                    long fileSize = fileData.Length;
+                                    block[0xFC] = (byte)((fileSize >> 24) & 0xFF);
+                                    block[0xFD] = (byte)((fileSize >> 16) & 0xFF);
+                                    block[0xFE] = (byte)((fileSize >> 8) & 0xFF);
+                                    block[0xFF] = (byte)(fileSize & 0xFF);
+
+                                    writer.Write(block);
+
+                                    currentOffset += fileSize;
+                                }
+
+                                byte[] padding = new byte[0x200];
+                                for (int i = 0; i < padding.Length; i++) padding[i] = 0x00;
+                                writer.Write(padding);
+
+                                foreach (var file in files)
+                                {
+                                    byte[] fileData = File.ReadAllBytes(file);
+                                    writer.Write(fileData);
+                                }
+                            }
+
+                            MessageBox.Show($"Repacking completed!", "Success!");
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"An error occurred during repacking: {ex.Message}.", "Error!");
+                        }
+                        finally
+                        {
+                            Invoke(new Action(() => progressBar1.Visible = false));
+                        }
+                    });
+                }
+            }
+        }
+
+        private static string GetRelativePath(string basePath, string fullPath)
+        {
+            Uri baseUri = new Uri(basePath.EndsWith("\\") ? basePath : basePath + "\\");
+            Uri fullUri = new Uri(fullPath);
+            return Uri.UnescapeDataString(baseUri.MakeRelativeUri(fullUri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
     }
 }
