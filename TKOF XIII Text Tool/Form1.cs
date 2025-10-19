@@ -19,36 +19,47 @@ namespace TKOF_XIII_Text_Tool
 
         private void button1_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                Title = "Select the translate file",
-                Filter = "Lua File (*.lua)|*.lua"
-            };
+                openFileDialog.Title = "Select Lua file(s) to extract";
+                openFileDialog.Filter = "Lua Files (*.lua)|*.lua";
+                openFileDialog.Multiselect = true;
 
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        foreach (string filePath in openFileDialog.FileNames)
+                        {
+                            ProcessFileForExtraction(filePath);
+                        }
+                        MessageBox.Show($"{openFileDialog.FileNames.Length} file(s) extracted successfully!", "Success!");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"An error occurred during extraction: {ex.Message}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        private void ProcessFileForExtraction(string filePath)
+        {
+            if (radioButton3.Checked)
             {
-                string filePath = openFileDialog.FileName;
+                string tempDecryptedPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_decrypted_temp.lua");
 
-                if (radioButton3.Checked)
-                {
-                    string tempDecryptedPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_decrypted_temp.lua");
+                EncryptFile(filePath, tempDecryptedPath);
 
-                    EncryptFile(filePath, tempDecryptedPath);
+                var extractedStrings = ExtractStringsFromFile(tempDecryptedPath);
+                SaveStringsToFile(extractedStrings, filePath);
 
-                    var extractedStrings = ExtractStringsFromFile(tempDecryptedPath);
-                    SaveStringsToFile(extractedStrings, filePath);
-
-                    File.Delete(tempDecryptedPath);
-
-                    MessageBox.Show($"File extracted successfully!", "Success!");
-                }
-                else
-                {
-                    var extractedStrings = ExtractStringsFromFile(filePath);
-                    SaveStringsToFile(extractedStrings, filePath);
-
-                    MessageBox.Show($"File extracted successfully!", "Success!");
-                }
+                File.Delete(tempDecryptedPath);
+            }
+            else
+            {
+                var extractedStrings = ExtractStringsFromFile(filePath);
+                SaveStringsToFile(extractedStrings, filePath);
             }
         }
 
@@ -272,7 +283,7 @@ namespace TKOF_XIII_Text_Tool
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Tool by Alex ''OAleex'' Félix\nVersion: 2.0", "About");
+            MessageBox.Show("Tool by Alex ''OAleex'' Félix\nVersion: 2.1\nContribution: AnkhYK", "About");
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
