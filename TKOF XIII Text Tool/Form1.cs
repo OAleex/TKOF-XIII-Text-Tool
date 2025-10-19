@@ -283,7 +283,7 @@ namespace TKOF_XIII_Text_Tool
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Tool by Alex ''OAleex'' Félix\nVersion: 2.0\n\nPatched by Ankh\nVersion: 2.1", "About");
+            MessageBox.Show("Tool by Alex ''OAleex'' Félix\nVersion: 2.1\nContribution: AnkhYK", "About");
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
